@@ -2,6 +2,7 @@
 #include <string.h>
 #include <windows.h>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -19,31 +20,24 @@ struct Coordenada
 };
 
 // Función para crear un nuevo nodo del árbol
-Coordenada* acCrearNodo(int acCap_Belica, string acGeolocalizacion, string acArsenal) 
-{
-    Coordenada* newCoordenada = new Coordenada();
-    newCoordenada->acCap_Belica = acCap_Belica;
-    newCoordenada->acGeolocalizacion = acGeolocalizacion;
-    newCoordenada->acArsenal = acArsenal;
-    newCoordenada->derecha = nullptr;
-    newCoordenada->izquierda = nullptr;
-    return newCoordenada;
-}
-
-// Función para insertar un nuevo nodo en el árbol
-Coordenada* insert(Coordenada* ABB, int acCap_Belica, string acGeolocalizacion, string acArsenal) 
+Coordenada* acCrearArbol(Coordenada* ABB,int acCap_Belica, string acGeolocalizacion, string acArsenal) 
 {
     // Si el árbol está vacío, se crea un nuevo nodo
     if (ABB == nullptr) {
-        return acCrearNodo(acCap_Belica, acGeolocalizacion, acArsenal);
+        Coordenada* newCoordenada = new Coordenada();
+        newCoordenada->acCap_Belica = acCap_Belica;
+        newCoordenada->acGeolocalizacion = acGeolocalizacion;
+        newCoordenada->acArsenal = acArsenal;
+        newCoordenada->derecha = nullptr;
+        newCoordenada->izquierda = nullptr;
     }
     // Si el valor es menor que el nodo actual, se inserta en el subárbol izquierdo
     if (acCap_Belica < ABB->acCap_Belica) {
-        ABB->izquierda = insert(ABB->izquierda, acCap_Belica, acGeolocalizacion, acArsenal);
+        ABB->izquierda = acCrearArbol(ABB->izquierda, acCap_Belica, acGeolocalizacion, acArsenal);
     }
     // Si el valor es mayor que el nodo actual, se inserta en el subárbol derecho
     else if (acCap_Belica > ABB->acCap_Belica) {
-        ABB->derecha = insert(ABB->derecha, acCap_Belica, acGeolocalizacion, acArsenal);
+        ABB->derecha = acCrearArbol(ABB->derecha, acCap_Belica, acGeolocalizacion, acArsenal);
     }
     // Si el valor ya existe, no se hace nada
     return ABB;
@@ -64,43 +58,49 @@ void verArbol(Coordenada* ABB, int n)
      verArbol(ABB->izquierda, n+1);
 }
 
-// Funcion para abrir el archivo
-void archivo()
+// Animacion de carga
+void MovRotacional()
 {
-    int acCap_Belica; 
-    string acGeolocalizacion; 
-    string acArsenal; 
-    ifstream inputFile("files/acdatos.txt");
-    if (!inputFile.is_open()) {
-        cerr << "No se pudo abrir el archivo." << endl;
-        // return 0;
+    int ind =0;
+    string c= "\\|/-|";
+    for(int i=0; i<= 100; i++)
+    {   
+        //updateBar(i);
+        if(i % 4 ==0)
+            ind =0;
+        cout << "\r" << c[ind++] << "  " << i << "%";
+        Sleep(100);
     }
-
-    Coordenada* ABB = nullptr; // Crea el árbol vacío
-
-    // Lee los datos del archivo y los inserta en el árbol
-    while (inputFile >> acCap_Belica >> acGeolocalizacion >> acArsenal) {
-        ABB = insert(ABB, acCap_Belica, acGeolocalizacion, acArsenal);
-    }
-    inputFile.close(); // Cierra el archivo
+    cout << endl;
 }
 
-// Muestra la carga desde el 0 hasta el 100 %
-void caCarga()
+void datos()
 {
-    for(int i = 0; i <= 100; i++)
-    {
-        cout << "\r" << i << " %";
-        Sleep(150);
-    }
+    cout    << endl << "[+] Informacion arbol binario capacidad belica Ucrania" << endl << endl
+            << "Developer-Nombre : " << ACNOMBRE_COMPLETO << endl
+            << "Developer-Cedula : " << ACCEDULA << endl
+            << "Capacidad Belica : " << "31" << endl
+            << "Coordenada-Total : " << "7" << endl
+            << "Coordenada-SecCarga : " << "1 7 5 6 0 8 4" << endl;
 }
-
-
 
 int main()
 {
-    Coordenada* ABB = nullptr; // Crea el árbol vacío
-    archivo();
-    verArbol(ABB,0);
+    Coordenada* ABB = NULL;
+    ifstream archivo("files/acdatos.txt");
+    if (archivo.is_open()) {
+        int acCap_Belica; 
+        string acGeolocalizacion; 
+        string acArsenal; 
+        while (archivo >> acCap_Belica >> ws && getline(archivo, acGeolocalizacion, ',') && getline(archivo, acArsenal)) {
+            ABB = acCrearArbol(ABB, acCap_Belica, acGeolocalizacion, acArsenal);
+        }
+        archivo.close();
+    }
+    else {
+        cout << "Error al abrir el archivo" << endl;
+    }
+    datos();// Procedimiento para  información con los datos del desarrollador y del árbol Binario de capacidad bélica Ucrania
+
     return 0;
 }
